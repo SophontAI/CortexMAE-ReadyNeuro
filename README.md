@@ -6,6 +6,7 @@ matter and locates them by their millimeter coordinates, so it takes native-spac
 template-space data alike. This repository holds the model, pretraining and evaluation code.
 
 - Paper: <https://openreview.net/forum?id=rLMKAJCLc1>
+- Blog post: <https://sophont.med/blog/native-fmri/>
 - Weights: <https://huggingface.co/medarc/CortexMAE-ReadyNeuro>
 - Data and evaluation data loaders: <https://github.com/SophontAI/ReadyNeuro>
 - Contact: paul@sophont.med
@@ -26,8 +27,9 @@ from git:
 ```sh
 git clone https://github.com/SophontAI/CortexMAE-ReadyNeuro.git
 cd CortexMAE-ReadyNeuro
-pip install -e '.[eval]'
-# or, for the offline tests in a uv-managed venv:
+pip install -e '.[eval]' pytest
+pytest tests/                      # offline tests
+# or, in a uv-managed venv:
 uv run --group dev pytest tests/
 ```
 
