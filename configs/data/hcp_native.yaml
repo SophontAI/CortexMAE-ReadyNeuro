@@ -1,0 +1,14 @@
+# HCP-YA, 880 participants, 1,482 h of stored BOLD, rebuilt from the raw T1w
+# and BOLD by the native pipeline. Same participants as hcp_mni.yaml, so the
+# pair varies coordinate space and preprocessing depth together.
+data:
+  urls:
+    - s3://<RESTRICTED_ROOT>/hcp-ya-pretrain-shards-v6-native/train/native
+# The paper's HCP-YA runs also scored the 100 held-out HCP-YA participants
+# (Brainmarks batches 16-17) in both preparations. The appendix loss table uses the
+# set in the run's own preparation; openneuro_heldout gives its 0.873 / 0.893.
+validation:
+  sets:
+    hcp_native: s3://<RESTRICTED_ROOT>/hcp-ya-pretrain-shards-v6-native/val/native
+    hcp_mni: s3://<RESTRICTED_ROOT>/hcp-ya-pretrain-shards-v6-native/val/mni
+    openneuro_heldout: s3://openneuro/v1/openneuro-pretrain-shards-v6-b31/train/native

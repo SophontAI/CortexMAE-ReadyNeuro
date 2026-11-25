@@ -1,0 +1,62 @@
+# The paper's model: a 4D ViT-L masked autoencoder over BOLD patches.
+# Layer one corpus from configs/data/ on top of this file; nothing else varies.
+model:
+  dim: 1024
+  n_heads: 16
+  depth: 24
+  decoder_dim: 512
+  decoder_head_dim: 64
+  decoder_depth: 12
+  patch_size: 6
+  temporal_patch_size: 4
+  drop_path_rate: 0.1
+  # Rotary position on world-millimetre patch centres: attention sees relative
+  # coordinates, so a subject's affine offset cancels within a sample and native
+  # and MNI become two distributions over one coordinate system.
+  pos_max_wavelength: 640.0
+
+data:
+  batch_size: 128
+  # Patch budget per sample: the encoder reads 96 patches drawn uniformly from
+  # whatever the subject's mask offers, the decoder reconstructs 32 drawn
+  # uniformly from the complement. Fixed by config, so a brain with more voxels
+  # gets a wider draw pool, not more compute.
+  context_patches: 96
+  target_patches: 32
+  shuffle_buffer: 1000
+  resume_segment_size: 8192
+  prefetch: 2
+  num_workers: 16
+  pin_memory: true
+  persistent_workers: true
+
+preproc:
+  clip_frames: 16
+  clip_value: 3.0
+  patch_valid_fraction_threshold: 0.1
+
+optim:
+  # Defined at a reference batch of 256 and rescaled as
+  # base_lr * sqrt(effective_batch / 256), so batch_size 128 trains at 7.07e-5.
+  base_lr: 1.0e-4
+  weight_decay: 0.05
+  steps: 200000
+  warmup_steps: 5000
+  grad_clip: 2.0
+
+checkpoint:
+  every_n_steps: 5000
+  # ~4.1 GB per step file; last.ckpt is a hard link to the newest, so retention
+  # costs no resume granularity while raising every_n_steps would.
+  keep_last: 3
+
+training:
+  accelerator: cuda
+  precision: bf16-mixed
+  compile: true
+  seed: 42
+
+wandb:
+  enabled: false  # --wandb.enabled true to log to Weights & Biases
+  project: fmri-pretrain
+  log_every_n_steps: 50

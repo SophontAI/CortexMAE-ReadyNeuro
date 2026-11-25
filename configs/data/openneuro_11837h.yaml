@@ -1,0 +1,10 @@
+# OpenNeuro subset: 15,578 within-study subject IDs in 15,592 shards (14 subjects
+# appear in two batches), 800 studies, 11,837 h of stored BOLD. Nested inside the
+# full corpus.
+# Shards from the 21 studies since withdrawn from OpenNeuro are not in the public
+# bucket. The paper trained on all 15,592 shards; the public bucket serves the
+# remaining 15,324 (779 studies, 11,674 h). The glob needs no edit: withdrawn
+# shards are simply absent.
+data:
+  urls:
+    - "s3://openneuro/v1/openneuro-pretrain-shards-v6{,-b{1..15}}/train/native"

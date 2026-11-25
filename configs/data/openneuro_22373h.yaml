@@ -1,0 +1,13 @@
+# The full OpenNeuro training corpus: 29,678 within-study subject IDs in 29,740
+# shards (62 subjects appear in two batches), 837 studies, 22,373 h of stored BOLD,
+# native space only.
+# The 31 roots this expands to are the training split; a 32nd (-b31) is held
+# out for validation and never appears in a training URL.
+# 484 shards from the 21 studies since withdrawn from OpenNeuro (and 14 of the b31
+# holdout) are not in the public bucket. The paper trained on all 29,740 shards; the
+# public bucket serves the remaining 29,256 (816 studies, 22,083 h) and a b31
+# holdout of 966 (439 studies). The glob needs no edit: withdrawn shards are simply
+# absent.
+data:
+  urls:
+    - "s3://openneuro/v1/openneuro-pretrain-shards-v6{,-b{1..30}}/train/native"
