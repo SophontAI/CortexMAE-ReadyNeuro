@@ -54,7 +54,7 @@ but 1, so
 
 ## Corpora
 
-Stored BOLD hours are the paper's scale axis. The six OpenNeuro subsets are nested:
+Stored BOLD hours are the paper's scale axis. The six ReadyNeuro subsets are nested:
 each is a prefix of the next. [^public]
 
 | config | participants / within-study IDs | studies | stored BOLD | space |
