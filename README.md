@@ -76,8 +76,8 @@ def dense(idx, values, shape):
     out[idx] = values
     return out.reshape(*shape, *values.shape[1:])
 
-url = "https://huggingface.co/datasets/medarc/ReadyNeuro/resolve/main/shards/ds003777__02.tar"
-# Full corpus: "pipe:aws --profile openneuro-public s3 cp s3://openneuro/v1/<prefix>/train/native/<shard>.tar -"
+url = "https://huggingface.co/datasets/medarc/ReadyNeuro/resolve/main/shards/ds004604__022.tar"
+# Same shard from the full corpus: "pipe:aws --profile openneuro-public s3 cp s3://openneuro/v1/openneuro-pretrain-shards-v6-b1/train/native/ds004604__022.tar -"
 for sample in wds.WebDataset(url, shardshuffle=False):
     meta = json.loads(sample["json"])
     arr = lambda name: np.load(io.BytesIO(sample[name]))
@@ -93,6 +93,8 @@ for sample in wds.WebDataset(url, shardshuffle=False):
 
 The bundle also has `bold_gm`, `bold_seg` (SynthSeg labels) and their `t1_*` counterparts. Each
 run has `mean.npy` and `std.npy` (multiply by `mean_scale`/`std_scale`), which undo the z-score.
+To find a shard on S3, look up its `batch` in [`openneuro_rebuild_manifest.jsonl.gz`](https://github.com/SophontAI/ReadyNeuro/blob/main/manifests/openneuro_rebuild_manifest.jsonl.gz):
+`b0` is the prefix `openneuro-pretrain-shards-v6/`, and `b<N>` is `openneuro-pretrain-shards-v6-b<N>/`.
 The full format is in [`tools/codec.py`](https://github.com/SophontAI/ReadyNeuro/blob/main/src/readyneuro/tools/codec.py).
 
 ## Tokenize without densifying
@@ -111,7 +113,7 @@ from fmrifm.pretrain_data import ShardReader, build_sampler, standardize_frames
 config = parse_config(["--config", "configs/model.yaml"])
 sampler = build_sampler(config)
 T, limit = config.preproc.clip_frames, config.preproc.clip_value
-url = "https://huggingface.co/datasets/medarc/ReadyNeuro/resolve/main/shards/ds007799__01.tar"
+url = "https://huggingface.co/datasets/medarc/ReadyNeuro/resolve/main/shards/ds004604__022.tar"
 for sample in ShardReader().read_shard(url):  # a local path, https:// or s3:// URL
     if sample["_kind"] == "bundle":
         layout = sampler.build_layout(sample)  # once per subject: patch grid over the cortical mask
