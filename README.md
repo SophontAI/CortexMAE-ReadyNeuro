@@ -95,6 +95,39 @@ The bundle also has `bold_gm`, `bold_seg` (SynthSeg labels) and their `t1_*` cou
 run has `mean.npy` and `std.npy` (multiply by `mean_scale`/`std_scale`), which undo the z-score.
 The full format is in [`tools/codec.py`](https://github.com/SophontAI/ReadyNeuro/blob/main/src/readyneuro/tools/codec.py).
 
+## Tokenize without densifying
+
+The dense BOLD grid is about 95% empty, and a long run as float32 takes gigabytes. The model never
+builds it. `build_layout` scatters only the 3D cortical mask, once per subject. It cuts the mask
+into 6x6x6 patches, keeps patches that are more than 10% cortex, and records which packed row
+fills each patch voxel. Each clip is then one indexing step on the packed `(voxels, frames)` array.
+This is the same code that training and evaluation run (from the repository root):
+
+```python
+import numpy as np
+from fmrifm.config import parse_config
+from fmrifm.pretrain_data import ShardReader, build_sampler, standardize_frames
+
+config = parse_config(["--config", "configs/model.yaml"])
+sampler = build_sampler(config)
+T, limit = config.preproc.clip_frames, config.preproc.clip_value
+url = "https://huggingface.co/datasets/medarc/ReadyNeuro/resolve/main/shards/ds007799__01.tar"
+for sample in ShardReader().read_shard(url):  # a local path, https:// or s3:// URL
+    if sample["_kind"] == "bundle":
+        layout = sampler.build_layout(sample)  # once per subject: patch grid over the cortical mask
+        continue
+    run = sample["bold_values"][layout.bold_rows].T.astype(np.float32)  # (frames, cortical voxels)
+    patches = layout.bold_grid.gather(standardize_frames(run))  # (frames, patches, 6**3)
+    for start in range(0, len(patches) - T + 1, T):  # runs shorter than T yield no clip
+        x = np.clip(patches[start : start + T], -limit, limit)  # (16, patches, 216)
+        coord = layout.bold_centers  # (patches, 3), world millimetres
+```
+
+`x` and `coord` are one sample of the encoder's input: add a batch axis and pass them as in
+[Encoder weights](TRAINING.md#encoder-weights). Patch counts differ between subjects: evaluation
+pads them and passes `valid`, and training draws a fixed 96 context and 32 target patches per
+clip (`sampler.sample_clips`).
+
 ## License and citation
 
 Code: MIT ([`LICENSE`](LICENSE)). Weights: CC BY-NC 4.0. ReadyNeuro: CC0 1.0. Brainmarks
